@@ -705,7 +705,7 @@ static int idaapi aarch64_extension_callback(void * user_data, int event_id, va_
 				size_t size = va_arg(va, size_t);
 				char *mnem = get_insn_mnem();
 				if (mnem == NULL) return 0;
-				qstrncpy(buf, get_insn_mnem(), size);
+				qstrncpy(buf, mnem, size);
 				return 2;
 			}
 	 	break;
