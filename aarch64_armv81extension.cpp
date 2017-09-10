@@ -1,5 +1,5 @@
 /*
- * aarch64_armv81extension - a IDA processor extender to support ARM v8.1 opcodes
+ * aarch64_armv81extension - an IDA processor extender to support ARM v8.1 opcodes
  * Copyright (C) 2017 Stefan Esser / Antid0te UG <stefan@antid0te.com>
  *
  * This program is free software; you can redistribute it and/or modify
