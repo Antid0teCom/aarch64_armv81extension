@@ -588,7 +588,7 @@ static size_t ana(void)
 	
 	/* LDADD.../STADD... */
 	if ((code & 0x3F20FC00) == 0x38200000) {
-		return handle_ldst(arm_ldclr, code);
+		return handle_ldst(arm_ldadd, code);
 	}
 	
 	/* LDCLR.../STCLR... */
