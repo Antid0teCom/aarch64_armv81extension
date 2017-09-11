@@ -239,6 +239,10 @@ enum {
 	arm_ldlar,
 	arm_ldlarb,
 	arm_ldlarh,
+
+	arm_stllr,
+	arm_stllrb,
+	arm_stllrh,
 };
 
 char *get_insn_mnem()
@@ -430,6 +434,10 @@ char *get_insn_mnem()
 	case arm_ldlar: return "LDLAR";
 	case arm_ldlarb: return "LDLARB";
 	case arm_ldlarh: return "LDLARH";
+	
+	case arm_stllr: return "STLLR";
+	case arm_stllrb: return "STLLRB";
+	case arm_stllrh: return "STLLRH";
   }
   return NULL;
 }
@@ -621,6 +629,37 @@ static size_t handle_ldlar(uint32_t code)
 	return 4;
 }
 
+static size_t handle_stllr(uint32_t code)
+{
+	uint32_t size = (code >> 30) & 3;
+	uint32_t Rn = (code >> 5) & 0x1f;
+	uint32_t Rt = (code) & 0x1f;
+	
+	uint32_t opcodes[4] = { arm_stllrb, arm_stllrh, arm_stllr, arm_stllr };
+	
+	cmd.itype = opcodes[size];
+	cmd.cond = cAL;
+	cmd.Op1.type = o_reg;
+	cmd.Op1.reg = Rt + X0;
+	cmd.Op2.type = o_displ;
+	if (Rn == 31) cmd.Op2.phrase = XSP; else cmd.Op2.phrase = Rn + X0;
+	cmd.Op2.addr = 0;
+	cmd.Op2.flags = OF_NO_BASE_DISP|OF_SHOW;
+	cmd.Op2.dtyp = dt_qword;
+	
+	switch (size) {
+		case 0:
+		case 1:
+		case 2:
+		cmd.Op1.dtyp = dt_dword;
+		break;
+		case 3:
+		cmd.Op1.dtyp = dt_qword;
+	}
+	
+	return 4;
+}
+
 static size_t ana(void)
 {
 	uint32_t code = get_long(ea++);
@@ -678,6 +717,11 @@ static size_t ana(void)
 	/* LDLAR... */
 	if ((code & 0x3FFFFC00) == 0x08DF7C00) {
 		return handle_ldlar(code);
+	}
+	
+	/* STLLR... */
+	if ((code & 0x3FFFFC00) == 0x089F7C00) {
+		return handle_stllr(code);
 	}
 	
 	/* CAS... */
