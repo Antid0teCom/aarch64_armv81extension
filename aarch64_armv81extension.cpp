@@ -235,6 +235,10 @@ enum {
 	arm_swpah,
 	arm_swpalh,
 	arm_swplh,
+	
+	arm_ldlar,
+	arm_ldlarb,
+	arm_ldlabh,
 };
 
 char *get_insn_mnem()
@@ -422,6 +426,10 @@ char *get_insn_mnem()
 	case arm_swpah: return "SWPAH";
 	case arm_swpalh: return "SWPALH";
 	case arm_swplh: return "SWPLH";
+
+	case arm_ldlar: return "LDLAR";
+	case arm_ldlarb: return "LDLARB";
+	case arm_ldlarh: return "LDLARH";
   }
   return NULL;
 }
@@ -582,6 +590,35 @@ static size_t handle_casp(uint32_t code)
 	return 4;
 }
 
+static size_t handle_ldlar(uint32_t code)
+{
+	uint32_t size = (code >> 30) & 3;
+	
+	uint32_t opcodes[4] = { arm_ldlarb, arm_ldlarh, arm_ldlar, arm_ldlar };
+	
+	cmd.itype = opcodes[size];
+	cmd.cond = cAL;
+	cmd.Op1.type = o_reg;
+	cmd.Op1.reg = Rs + X0;
+	cmd.Op2.type = o_displ;
+	if (Rn == 31) cmd.Op2.phrase = XSP; else cmd.Op2.phrase = Rn + X0;
+	cmd.Op2.addr = 0;
+	cmd.Op2.flags = OF_NO_BASE_DISP|OF_SHOW;
+	cmd.Op2.dtyp = dt_qword;
+	
+	switch (size) {
+		case 0:
+		case 1:
+		case 2:
+		cmd.Op1.dtyp = dt_dword;
+		break;
+		case 3:
+		cmd.Op1.dtyp = dt_qword;
+	}
+	
+	return 4;
+}
+
 static size_t ana(void)
 {
 	uint32_t code = get_long(ea++);
@@ -634,6 +671,11 @@ static size_t ana(void)
 	/* CASP... */
 	if ((code & 0xBFA07C00) == 0x08207C00) {
 		return handle_casp(code);
+	}
+	
+	/* LDLAR... */
+	if ((code & 0x3FFFFC00) == 0x08DF7C00) {
+		return handle_ldlar(code);
 	}
 	
 	/* CAS... */
