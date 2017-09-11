@@ -238,7 +238,7 @@ enum {
 	
 	arm_ldlar,
 	arm_ldlarb,
-	arm_ldlabh,
+	arm_ldlarh,
 };
 
 char *get_insn_mnem()
@@ -593,13 +593,15 @@ static size_t handle_casp(uint32_t code)
 static size_t handle_ldlar(uint32_t code)
 {
 	uint32_t size = (code >> 30) & 3;
+	uint32_t Rn = (code >> 5) & 0x1f;
+	uint32_t Rt = (code) & 0x1f;
 	
 	uint32_t opcodes[4] = { arm_ldlarb, arm_ldlarh, arm_ldlar, arm_ldlar };
 	
 	cmd.itype = opcodes[size];
 	cmd.cond = cAL;
 	cmd.Op1.type = o_reg;
-	cmd.Op1.reg = Rs + X0;
+	cmd.Op1.reg = Rt + X0;
 	cmd.Op2.type = o_displ;
 	if (Rn == 31) cmd.Op2.phrase = XSP; else cmd.Op2.phrase = Rn + X0;
 	cmd.Op2.addr = 0;
